@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Favorite Movies</title>
+    <link href="/styles.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
+    <style>
+        #container{
+            width: 100%;
+        }
+        #title-div{
+            display: flex;
+            align-items: center;
+        }
+        #title-div i{
+            margin-left: 15vh ;
+            cursor: pointer;
+        }
+        #heading{
+            margin-left: 50vh;
+        }
+        #favorites-list{
+            font-size: large ;
+            align-items: center;
+        }
+        #details{
+            display: flex;
+            width: 80%;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+        #details img{
+            border: 2px solid black;
+            height: 75px;
+            width: 75px;
+        }
+        #details p{
+            width: 500px;
+        }
+        #icons{
+            margin-right: 10%;   
+        }
+    </style>
+</head>
+<body>
+    <script>
+
+        const body = document.body;
+
+        //Main conatiner
+        const container = document.createElement("div");
+        container.setAttribute('id', 'container');
+        body.appendChild(container);
+
+        //Title of the page
+        const titleDiv = document.createElement("div");
+        titleDiv.setAttribute('id', 'title-div');
+        container.appendChild(titleDiv);
+
+        //left arrow button to go back to home page
+        const backBtn = document.createElement("i");
+        backBtn.setAttribute('class', 'fas fa-long-arrow-alt-left');
+        titleDiv.appendChild(backBtn);
+
+        backBtn.addEventListener('click', ()=>{
+            window.location.href = `index.html`;
+        })
+
+        //Title of the page
+        const heading = document.createElement('h3');
+        heading.setAttribute('id', 'heading');
+        heading.textContent = 'My Favorite Movies';
+
+        titleDiv.appendChild(heading);
+
+        //Container to show the list of favorite movies.
+        const favoritesList = document.createElement('div');
+        favoritesList.setAttribute('id', 'favorites-list');
+        container.appendChild(favoritesList);
+
+        //Check and display favorite movies from the local storage.
+        function loadFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            if (favorites.length > 0) {
+                favorites.forEach(id => fetchFavoriteMovie(id));
+            } else {
+                favoritesList.innerHTML = '<div id="details"><p style="color:white;">No favorite movies yet.</p></div>';
+            }
+        }
+
+        //Function to fetch the single favorite movie from API based on its id.
+        async function fetchFavoriteMovie(id) {
+            const response = await fetch(`https://www.omdbapi.com/?i=${id}&apikey=8eef8408`);
+            const movie = await response.json();
+            displayFavoriteMovie(movie);
+        }
+
+        //Function to display movie on the favoriteList container.
+        function displayFavoriteMovie(movie) {
+            const movieElement = document.createElement('div');
+            movieElement.classList.add('movie');
+            movieElement.innerHTML = `
+            <div id="details">
+                <img src="${movie.Poster}" alt="${movie.Title}">
+                <p>${movie.Title}</p>
+            </div>
+            <div id='icons'>
+                <i onclick="removeFromFavorites('${movie.imdbID}')" class="fas fa-trash"></i>
+                <i onclick="viewDetails('${movie.imdbID}')" class="far fa-eye"></i>
+            </div>
+            `;
+            favoritesList.appendChild(movieElement);
+        }
+
+        //Function to remove single movie from the favoriteList and local storage.
+        function removeFromFavorites(imdbID) {
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            favorites = favorites.filter(id => id !== imdbID);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            location.reload();
+        }
+
+        //Open the movie.html page with the id of the selected movie to get the details.
+        function viewDetails(imdbID) {
+            window.location.href = `movie.html?id=${imdbID}`;
+        }
+
+        //Calling the function to check and display favorite movies from the local storage.
+        loadFavorites();
+    </script>
+</body>
+</html>
